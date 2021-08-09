@@ -114,9 +114,9 @@ return @(ret); \
         };
             
         case '@': { // id
-            void *ret;
+            id ret = nil;
             [inv getReturnValue:&ret];
-            return (__bridge id)(ret);
+            return ret;
         };
             
         case '#': { // Class

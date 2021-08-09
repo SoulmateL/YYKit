@@ -181,6 +181,22 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
 @synthesize selectionAffinity = _selectionAffinity;
 
 
+#pragma mark - Dark mode Adapter
+
+#ifdef __IPHONE_13_0
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection{
+    [super traitCollectionDidChange:previousTraitCollection];
+    
+    if (@available(iOS 13.0, *)) {
+        if([UITraitCollection.currentTraitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]){
+            [self _commitUpdate];
+        }
+    } else {
+        // Fallback on earlier versions
+    }
+}
+#endif
+
 #pragma mark - Private
 
 /// Update layout and selection before runloop sleep/end.
