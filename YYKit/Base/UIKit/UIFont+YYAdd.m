@@ -86,7 +86,11 @@ YYSYNTH_DUMMY_CLASS(UIFont_YYAdd)
 }
 
 - (CTFontRef)CTFontRef CF_RETURNS_RETAINED {
-    CTFontRef font = CTFontCreateWithName((__bridge CFStringRef)self.fontName, self.pointSize, NULL);
+    NSString *fontName = self.fontName;
+    if ([fontName isEqualToString:@".SFUI-Regular"]) {
+        fontName = @"TimesNewRomanPSMT";
+    }
+    CTFontRef font = CTFontCreateWithName((__bridge CFStringRef)fontName, self.pointSize, NULL);
     return font;
 }
 

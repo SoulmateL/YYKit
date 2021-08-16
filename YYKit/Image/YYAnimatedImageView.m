@@ -439,16 +439,12 @@ typedef NS_ENUM(NSUInteger, YYAnimatedImageType) {
 }
 
 - (void)displayLayer:(CALayer *)layer {
-    //    if (_curFrame) {
-    //        layer.contents = (__bridge id)_curFrame.CGImage;
-    //    }
-    UIImage *currentFrame = _curFrame;
-    if (!currentFrame) {
-        currentFrame = self.image;
+    if (_curFrame) {
+        layer.contents = (__bridge id)_curFrame.CGImage;
     }
-    if (currentFrame) {
-        layer.contentsScale = currentFrame.scale;
-        layer.contents = (__bridge id)currentFrame.CGImage;
+    
+    if (@available(iOS 14.0, *)) {
+        [super displayLayer:layer];
     }
 }
 
