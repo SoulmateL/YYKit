@@ -39,6 +39,11 @@
             one.userInteractionEnabled = NO;
             one.windowLevel = UIWindowLevelStatusBar + 1;
             one.hidden = NO;
+            if (@available(iOS 13.0, *)) {
+                one.hidden = YES;
+            }else{
+                one.hidden = NO;
+            }
             
             // for iOS 9:
             one.opaque = NO;
@@ -61,12 +66,18 @@
         UIViewController *topViewController = window.rootViewController;
         if (topViewController) return topViewController;
     }
-    UIViewController *viewController = [super rootViewController];
-    if (!viewController) {
-        viewController = [UIViewController new];
-        [super setRootViewController:viewController];
-    }
-    return viewController;
+    return [UIViewController new];
+    
+    // 循环崩溃
+    /**
+     UIViewController *viewController = [super rootViewController];
+     if (!viewController) {
+         viewController = [UIViewController new];
+         [super setRootViewController:viewController];
+     }
+     return viewController;
+     */
+    
 }
 
 // Bring self to front
@@ -79,7 +90,7 @@
     if (key && key.windowLevel > top.windowLevel) top = key;
     if (top == self) return;
     self.windowLevel = top.windowLevel + 1;
-
+    
 }
 
 - (YYTextDirection)_keyboardDirection {
@@ -175,7 +186,7 @@
                 center.x = mag.bounds.size.height;
         }
     }
-
+    
     
     CGRect keyboardFrame = [YYTextKeyboardManager defaultManager].keyboardFrame;
     keyboardFrame = [[YYTextKeyboardManager defaultManager] convertRect:keyboardFrame toView:self];
