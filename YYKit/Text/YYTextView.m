@@ -812,6 +812,13 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     _longPressTimer = nil;
 }
 
+// Disable scrollView panGesture and interactive superview scroll action
+- (void)_disablePanGestures {
+    self.panGestureRecognizer.enabled = NO; // disable scroll view
+    self.interactiveSuperScrollView.scrollEnabled = NO; // disable interactive superview
+}
+
+
 /// Long press detected.
 - (void)_trackDidLongPress {
     [self _endLongPressTimer];
@@ -845,11 +852,13 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
         [self _removeHighlightAnimated:NO];
         if (_state.trackingTouch) {
             if (_state.trackingGrabber) {
-                self.panGestureRecognizer.enabled = NO;
+//                self.panGestureRecognizer.enabled = NO;
+                [self _disablePanGestures];
                 [self _hideMenu];
                 [self _showMagnifierRanged];
             } else if (self.isFirstResponder){
-                self.panGestureRecognizer.enabled = NO;
+//                self.panGestureRecognizer.enabled = NO;
+                [self _disablePanGestures];
                 _selectionView.caretBlinks = NO;
                 _state.trackingCaret = YES;
                 CGPoint trackingPoint = [self _convertPointToLayout:_trackingPoint];
@@ -874,7 +883,7 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
                     [self _showMagnifierCaret];
                 }
             } else if (self.selectable) {
-                self.panGestureRecognizer.enabled = NO;
+                [self _disablePanGestures];
                 _state.trackingPreSelect = YES;
                 _state.selectedWithoutEdit = NO;
                 [self _updateTextRangeByTrackingPreSelect];
@@ -1020,6 +1029,7 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     [self _updateSelectionView];
     
     self.panGestureRecognizer.enabled = self.scrollEnabled;
+    self.interactiveSuperScrollView.scrollEnabled = YES;
 }
 
 /// Start a timer to fix the selection dot.
@@ -2525,7 +2535,8 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
             [self _showHighlightAnimated:NO];
         } else {
             if ([_selectionView isGrabberContainsPoint:point]) { // track grabber
-                self.panGestureRecognizer.enabled = NO; // disable scroll view
+//                self.panGestureRecognizer.enabled = NO; // disable scroll view
+                [self _disablePanGestures];
                 [self _hideMenu];
                 _state.trackingGrabber = [_selectionView isStartGrabberContainsPoint:point] ? kStart : kEnd;
                 _magnifierRangedOffset = [self _getMagnifierRangedOffset];
@@ -2533,7 +2544,9 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
                 if (_selectedTextRange.asRange.length == 0 && self.isFirstResponder) {
                     if ([_selectionView isCaretContainsPoint:point]) { // track caret
                         _state.trackingCaret = YES;
-                        self.panGestureRecognizer.enabled = NO; // disable scroll view
+//                        self.panGestureRecognizer.enabled = NO; // disable scroll view
+                        [self _disablePanGestures];
+
                     }
                 }
             }
@@ -2574,7 +2587,8 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
         } else {
             _trackingRange = _selectedTextRange;
             if (_state.trackingGrabber) {
-                self.panGestureRecognizer.enabled = NO;
+//                self.panGestureRecognizer.enabled = NO;
+                [self _disablePanGestures];
                 [self _hideMenu];
                 [self _updateTextRangeByTrackingGrabber];
                 showMagnifierRanged = YES;
@@ -2587,11 +2601,13 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
                     [self _hideMenu];
                     if (_verticalForm) {
                         if (_state.touchMoved == kTop || _state.touchMoved == kBottom) {
-                            self.panGestureRecognizer.enabled = NO;
+//                            self.panGestureRecognizer.enabled = NO;
+                            [self _disablePanGestures];
                         }
                     } else {
                         if (_state.touchMoved == kLeft || _state.touchMoved == kRight) {
-                            self.panGestureRecognizer.enabled = NO;
+//                            self.panGestureRecognizer.enabled = NO;
+                            [self _disablePanGestures];
                         }
                     }
                     [self _updateTextRangeByTrackingCaret];
