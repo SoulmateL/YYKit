@@ -33,26 +33,26 @@ static NSString *const kTrashDirectoryName = @"trash";
 /*
  File:
  /path/
-      /manifest.sqlite
-      /manifest.sqlite-shm
-      /manifest.sqlite-wal
-      /data/
-           /e10adc3949ba59abbe56e057f20f883e
-           /e10adc3949ba59abbe56e057f20f883e
-      /trash/
-            /unused_file_or_folder
+ /manifest.sqlite
+ /manifest.sqlite-shm
+ /manifest.sqlite-wal
+ /data/
+ /e10adc3949ba59abbe56e057f20f883e
+ /e10adc3949ba59abbe56e057f20f883e
+ /trash/
+ /unused_file_or_folder
  
  SQL:
  create table if not exists manifest (
-    key                 text,
-    filename            text,
-    size                integer,
-    inline_data         blob,
-    modification_time   integer,
-    last_access_time    integer,
-    extended_data       blob,
-    primary key(key)
- ); 
+ key                 text,
+ filename            text,
+ size                integer,
+ inline_data         blob,
+ modification_time   integer,
+ last_access_time    integer,
+ extended_data       blob,
+ primary key(key)
+ );
  create index if not exists last_access_time_idx on manifest(last_access_time);
  */
 
@@ -106,7 +106,6 @@ static NSString *const kTrashDirectoryName = @"trash";
             if (_dbStmtCache) CFRelease(_dbStmtCache);
             _dbStmtCache = NULL;
         }
-        _dbStmtCache = NULL;
         _dbLastOpenErrorTime = CACurrentMediaTime();
         _dbOpenErrorCount++;
         
@@ -141,7 +140,6 @@ static NSString *const kTrashDirectoryName = @"trash";
         if (_dbStmtCache) CFRelease(_dbStmtCache);
         _dbStmtCache = NULL;
     }
-    _dbStmtCache = NULL;
     
     do {
         retry = NO;
@@ -279,7 +277,7 @@ static NSString *const kTrashDirectoryName = @"trash";
 - (BOOL)_dbUpdateAccessTimeWithKeys:(NSArray *)keys {
     if (![self _dbCheck]) return NO;
     int t = (int)time(NULL);
-     NSString *sql = [NSString stringWithFormat:@"update manifest set last_access_time = %d where key in (%@);", t, [self _dbJoinedKeys:keys]];
+    NSString *sql = [NSString stringWithFormat:@"update manifest set last_access_time = %d where key in (%@);", t, [self _dbJoinedKeys:keys]];
     
     sqlite3_stmt *stmt = NULL;
     int result = sqlite3_prepare_v2(_db, sql.UTF8String, -1, &stmt, NULL);
