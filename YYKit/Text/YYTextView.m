@@ -3662,7 +3662,11 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
             direction == UITextStorageDirectionBackward) {
              ofs--;
         }
-        attrs = [_innerText attributesAtIndex:ofs effectiveRange:NULL];
+        
+        if (ofs >= 0 && ofs < _innerText.length) {
+            attrs = [_innerText attributesAtIndex:ofs effectiveRange:NULL];
+        }
+        
     }
     return attrs;
 }
