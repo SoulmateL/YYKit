@@ -151,13 +151,24 @@ static NSDictionary *YYTextResolveAttributesWithTrait(NSDictionary *attrs,
         CGColorRef resolvedCG = resolved.CGColor;
         CGColorRef existingCG = YYTextCGColorFromValue(attrs[(id)kCTForegroundColorAttributeName]);
         UIColor *existingNS = attrs[NSForegroundColorAttributeName];
-        BOOL sameNS = existingNS && [existingNS isEqual:resolved];
-        BOOL sameCT = existingCG && CGColorEqualToColor(existingCG, resolvedCG);
-        if (!sameNS || !sameCT) {
-            ensureAttrs();
-            newAttrs[NSForegroundColorAttributeName] = resolved;
-            newAttrs[(id)kCTForegroundColorAttributeName] = (__bridge id)(resolvedCG);
-            changed = YES;
+        BOOL hasNS = existingNS != nil;
+        BOOL hasCT = existingCG != NULL;
+        BOOL mismatch = hasNS && hasCT && !CGColorEqualToColor(existingNS.CGColor, existingCG);
+        if (mismatch) {
+            if (!hasNS || ![existingNS isEqual:resolved]) {
+                ensureAttrs();
+                newAttrs[NSForegroundColorAttributeName] = resolved;
+                changed = YES;
+            }
+        } else {
+            BOOL sameNS = hasNS && [existingNS isEqual:resolved];
+            BOOL sameCT = hasCT && CGColorEqualToColor(existingCG, resolvedCG);
+            if (!sameNS || !sameCT) {
+                ensureAttrs();
+                newAttrs[NSForegroundColorAttributeName] = resolved;
+                newAttrs[(id)kCTForegroundColorAttributeName] = (__bridge id)(resolvedCG);
+                changed = YES;
+            }
         }
     }
 
@@ -170,13 +181,24 @@ static NSDictionary *YYTextResolveAttributesWithTrait(NSDictionary *attrs,
         CGColorRef resolvedCG = resolved.CGColor;
         CGColorRef existingCG = YYTextCGColorFromValue(attrs[(id)kCTStrokeColorAttributeName]);
         UIColor *existingNS = attrs[NSStrokeColorAttributeName];
-        BOOL sameNS = existingNS && [existingNS isEqual:resolved];
-        BOOL sameCT = existingCG && CGColorEqualToColor(existingCG, resolvedCG);
-        if (!sameNS || !sameCT) {
-            ensureAttrs();
-            newAttrs[NSStrokeColorAttributeName] = resolved;
-            newAttrs[(id)kCTStrokeColorAttributeName] = (__bridge id)(resolvedCG);
-            changed = YES;
+        BOOL hasNS = existingNS != nil;
+        BOOL hasCT = existingCG != NULL;
+        BOOL mismatch = hasNS && hasCT && !CGColorEqualToColor(existingNS.CGColor, existingCG);
+        if (mismatch) {
+            if (!hasNS || ![existingNS isEqual:resolved]) {
+                ensureAttrs();
+                newAttrs[NSStrokeColorAttributeName] = resolved;
+                changed = YES;
+            }
+        } else {
+            BOOL sameNS = hasNS && [existingNS isEqual:resolved];
+            BOOL sameCT = hasCT && CGColorEqualToColor(existingCG, resolvedCG);
+            if (!sameNS || !sameCT) {
+                ensureAttrs();
+                newAttrs[NSStrokeColorAttributeName] = resolved;
+                newAttrs[(id)kCTStrokeColorAttributeName] = (__bridge id)(resolvedCG);
+                changed = YES;
+            }
         }
     }
 
@@ -285,7 +307,7 @@ static NSDictionary *YYTextResolveAttributesWithTrait(NSDictionary *attrs,
         if ([highlight isKindOfClass:[YYTextHighlight class]]) {
             NSDictionary *resolvedAttrs = YYTextResolveAttributesWithTrait(highlight.attributes, traitCollection, NO);
             if (resolvedAttrs != highlight.attributes) {
-                YYTextHighlight *resolvedHighlight = [YYTextHighlight new];
+                YYTextHighlight *resolvedHighlight = [highlight copy];
                 resolvedHighlight.attributes = resolvedAttrs;
                 resolvedHighlight.userInfo = highlight.userInfo;
                 resolvedHighlight.tapAction = highlight.tapAction;
