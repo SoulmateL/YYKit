@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		186394DE2F39DB6800F2C0FA /* YYTextDarkModeDebugExample.m in Sources */ = {isa = PBXBuildFile; fileRef = 186394DD2F39DB6800F2C0FA /* YYTextDarkModeDebugExample.m */; };
 		ABDC320D1BEAFB870012A159 /* YYTextTagExample.m in Sources */ = {isa = PBXBuildFile; fileRef = ABDC320C1BEAFB870012A159 /* YYTextTagExample.m */; };
 		D9067DF11B975D3900F346EB /* YYTextExampleHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = D9067DF01B975D3900F346EB /* YYTextExampleHelper.m */; };
 		D9067DF41B9813B500F346EB /* YYTextEditExample.m in Sources */ = {isa = PBXBuildFile; fileRef = D9067DF31B9813B500F346EB /* YYTextEditExample.m */; };
@@ -196,6 +197,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		186394DC2F39DB6800F2C0FA /* YYTextDarkModeDebugExample.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YYTextDarkModeDebugExample.h; sourceTree = "<group>"; };
+		186394DD2F39DB6800F2C0FA /* YYTextDarkModeDebugExample.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YYTextDarkModeDebugExample.m; sourceTree = "<group>"; };
 		ABDC320B1BEAFB870012A159 /* YYTextTagExample.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YYTextTagExample.h; sourceTree = "<group>"; };
 		ABDC320C1BEAFB870012A159 /* YYTextTagExample.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YYTextTagExample.m; sourceTree = "<group>"; };
 		D9067DEF1B975D3900F346EB /* YYTextExampleHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YYTextExampleHelper.h; sourceTree = "<group>"; };
@@ -616,6 +619,8 @@
 		D91A99341B5A8D3500EF3A3E /* Text */ = {
 			isa = PBXGroup;
 			children = (
+				186394DC2F39DB6800F2C0FA /* YYTextDarkModeDebugExample.h */,
+				186394DD2F39DB6800F2C0FA /* YYTextDarkModeDebugExample.m */,
 				D91A99451B5A8DF400EF3A3E /* YYTextExample.h */,
 				D91A99461B5A8DF400EF3A3E /* YYTextExample.m */,
 				D9971BAE1B84D55A00A7B424 /* YYTextAttributeExample.h */,
@@ -1305,6 +1310,7 @@
 				D9B2609F1BEE79370038C00A /* YYTransaction.m in Sources */,
 				D9067E1A1B98B6AE00F346EB /* WBModel.m in Sources */,
 				D9B260611BEE79370038C00A /* UIBarButtonItem+YYAdd.m in Sources */,
+				186394DE2F39DB6800F2C0FA /* YYTextDarkModeDebugExample.m in Sources */,
 				D9067DFA1B98637B00F346EB /* YYTextEmoticonExample.m in Sources */,
 				D90F521F1B78537600C9B465 /* YYImageBenchmark.m in Sources */,
 				D9B260821BEE79370038C00A /* YYTextDebugOption.m in Sources */,
@@ -1482,6 +1488,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				COMPRESS_PNG_FILES = NO;
+				DEVELOPMENT_TEAM = 2HB3467PJ2;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/**",
@@ -1493,13 +1500,14 @@
 					"$(PROJECT_DIR)/**",
 				);
 				INFOPLIST_FILE = YYKitDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.ibireme.YYKitDemo";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ibireme.YYKitDemo;
 				PRODUCT_NAME = YYKitDemo;
 				STRIP_PNG_TEXT = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1511,6 +1519,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				COMPRESS_PNG_FILES = NO;
+				DEVELOPMENT_TEAM = 2HB3467PJ2;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/**",
@@ -1521,13 +1530,14 @@
 					"$(PROJECT_DIR)/**",
 				);
 				INFOPLIST_FILE = YYKitDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.ibireme.YYKitDemo";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ibireme.YYKitDemo;
 				PRODUCT_NAME = YYKitDemo;
 				STRIP_PNG_TEXT = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";

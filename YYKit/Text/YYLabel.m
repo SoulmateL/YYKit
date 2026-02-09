@@ -79,8 +79,11 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection{
     [super traitCollectionDidChange:previousTraitCollection];
     if (@available(iOS 13.0, *)) {
-        if([UITraitCollection.currentTraitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]){
-            [self.layer setNeedsDisplay];
+        if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+            _innerContainer.traitCollection = self.traitCollection;
+            _highlightLayout = nil;
+            _shrinkHighlightLayout = nil;
+            [self _setLayoutNeedUpdate];
         }
     } else {
         // Fallback on earlier versions
@@ -100,6 +103,9 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
 }
 
 - (void)_updateLayout {
+    if (@available(iOS 13.0, *)) {
+        _innerContainer.traitCollection = self.traitCollection;
+    }
     _innerLayout = [YYTextLayout layoutWithContainer:_innerContainer text:_innerText];
     _shrinkInnerLayout = [YYLabel _shrinkLayoutWithLayout:_innerLayout];
 }
@@ -420,6 +426,9 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
     _innerContainer = [YYTextContainer new];
     _innerContainer.truncationType = YYTextTruncationTypeEnd;
     _innerContainer.maximumNumberOfRows = _numberOfLines;
+    if (@available(iOS 13.0, *)) {
+        _innerContainer.traitCollection = self.traitCollection;
+    }
     _clearContentsBeforeAsynchronouslyDisplay = YES;
     _fadeOnAsynchronouslyDisplay = YES;
     _fadeOnHighlight = YES;
@@ -1012,6 +1021,9 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
             _innerContainer.insets = self.textContainerInset;
         }
         [self _updateOuterContainerProperties];
+    }
+    if (@available(iOS 13.0, *)) {
+        _innerContainer.traitCollection = self.traitCollection;
     }
     
     if (_displaysAsynchronously && _clearContentsBeforeAsynchronouslyDisplay) {

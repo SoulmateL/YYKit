@@ -102,6 +102,9 @@ extern const CGSize YYTextContainerMaxSize;
 /// This modifier is applied to the lines before the layout is completed,
 /// give you a chance to modify the line position. Default is nil.
 @property (nullable, copy) id<YYTextLinePositionModifier> linePositionModifier;
+
+/// Trait collection used to resolve dynamic colors. Default is nil.
+@property (nullable, nonatomic, copy) UITraitCollection *traitCollection;
 @end
 
 

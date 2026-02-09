@@ -188,7 +188,8 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     [super traitCollectionDidChange:previousTraitCollection];
     
     if (@available(iOS 13.0, *)) {
-        if([UITraitCollection.currentTraitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]){
+        if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+            _innerContainer.traitCollection = self.traitCollection;
             [self _commitUpdate];
         }
     } else {
@@ -225,6 +226,9 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
 
 /// Update layout immediately.
 - (void)_updateLayout {
+    if (@available(iOS 13.0, *)) {
+        _innerContainer.traitCollection = self.traitCollection;
+    }
     NSMutableAttributedString *text = _innerText.mutableCopy;
     _placeHolderView.hidden = text.length > 0;
     if ([self _detectText:text]) {
@@ -1977,6 +1981,9 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     _innerText = [NSMutableAttributedString new];
     _innerContainer = [YYTextContainer new];
     _innerContainer.insets = kDefaultInset;
+    if (@available(iOS 13.0, *)) {
+        _innerContainer.traitCollection = self.traitCollection;
+    }
     _textContainerInset = kDefaultInset;
     _typingAttributesHolder = [[NSMutableAttributedString alloc] initWithString:@" "];
     _linkTextAttributes = @{NSForegroundColorAttributeName : [self _defaultTintColor],

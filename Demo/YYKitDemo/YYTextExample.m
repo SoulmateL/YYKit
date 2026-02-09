@@ -32,6 +32,7 @@
     [self addCell:@"Undo and Redo" class:@"YYTextUndoRedoExample"];
     [self addCell:@"Ruby Annotation" class:@"YYTextRubyExample"];
     [self addCell:@"Async Display" class:@"YYTextAsyncExample"];
+    [self addCell:@"Dark Mode Debug" class:@"YYTextDarkModeDebugExample"];
     [self.tableView reloadData];
 }
 

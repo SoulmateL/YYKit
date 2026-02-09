@@ -58,6 +58,265 @@ static CGColorRef YYTextGetCGColor(CGColorRef color) {
     return color;
 }
 
+static UIColor *YYTextColorFromValue(id value) {
+    if ([value isKindOfClass:[UIColor class]]) return value;
+    if (value && CFGetTypeID((__bridge CFTypeRef)(value)) == CGColorGetTypeID()) {
+        return [UIColor colorWithCGColor:(__bridge CGColorRef)(value)];
+    }
+    return nil;
+}
+
+static CGColorRef YYTextCGColorFromValue(id value) {
+    if (!value) return NULL;
+    if (CFGetTypeID((__bridge CFTypeRef)(value)) == CGColorGetTypeID()) {
+        return (__bridge CGColorRef)(value);
+    }
+    if ([value isKindOfClass:[UIColor class]]) {
+        return ((UIColor *)value).CGColor;
+    }
+    return NULL;
+}
+
+static UIColor *YYTextResolveUIColor(UIColor *color, UITraitCollection *traitCollection) {
+    if (!color) return nil;
+    if (@available(iOS 13.0, *)) {
+        if (traitCollection) return [color resolvedColorWithTraitCollection:traitCollection];
+    }
+    return color;
+}
+
+static NSShadow *YYTextResolveNSShadow(NSShadow *shadow, UITraitCollection *traitCollection) {
+    if (!shadow) return nil;
+    id color = shadow.shadowColor;
+    if (![color isKindOfClass:[UIColor class]]) return shadow;
+    UIColor *resolved = YYTextResolveUIColor(color, traitCollection);
+    if (!resolved || resolved == color) return shadow;
+    NSShadow *copy = [NSShadow new];
+    copy.shadowOffset = shadow.shadowOffset;
+    copy.shadowBlurRadius = shadow.shadowBlurRadius;
+    copy.shadowColor = resolved;
+    return copy;
+}
+
+static YYTextShadow *YYTextResolveTextShadow(YYTextShadow *shadow, UITraitCollection *traitCollection) {
+    if (!shadow) return nil;
+    YYTextShadow *copy = shadow.copy;
+    if (copy.color) {
+        copy.color = YYTextResolveUIColor(copy.color, traitCollection);
+    }
+    if (copy.subShadow) {
+        copy.subShadow = YYTextResolveTextShadow(copy.subShadow, traitCollection);
+    }
+    return copy;
+}
+
+static YYTextDecoration *YYTextResolveTextDecoration(YYTextDecoration *decoration, UITraitCollection *traitCollection) {
+    if (!decoration || !decoration.color) return decoration;
+    YYTextDecoration *copy = decoration.copy;
+    copy.color = YYTextResolveUIColor(copy.color, traitCollection);
+    return copy;
+}
+
+static YYTextBorder *YYTextResolveTextBorder(YYTextBorder *border, UITraitCollection *traitCollection) {
+    if (!border) return nil;
+    YYTextBorder *copy = border.copy;
+    if (copy.strokeColor) {
+        copy.strokeColor = YYTextResolveUIColor(copy.strokeColor, traitCollection);
+    }
+    if (copy.fillColor) {
+        copy.fillColor = YYTextResolveUIColor(copy.fillColor, traitCollection);
+    }
+    if (copy.shadow) {
+        copy.shadow = YYTextResolveTextShadow(copy.shadow, traitCollection);
+    }
+    return copy;
+}
+
+static NSDictionary *YYTextResolveAttributesWithTrait(NSDictionary *attrs,
+                                                      UITraitCollection *traitCollection,
+                                                      BOOL resolveHighlight) {
+    if (!attrs.count) return attrs;
+    __block NSMutableDictionary *newAttrs = nil;
+    BOOL changed = NO;
+    void (^ensureAttrs)(void) = ^{
+        if (!newAttrs) newAttrs = attrs.mutableCopy;
+    };
+
+    UIColor *foreground = YYTextColorFromValue(attrs[NSForegroundColorAttributeName]);
+    if (!foreground) {
+        foreground = YYTextColorFromValue(attrs[(id)kCTForegroundColorAttributeName]);
+    }
+    if (foreground) {
+        UIColor *resolved = YYTextResolveUIColor(foreground, traitCollection);
+        CGColorRef resolvedCG = resolved.CGColor;
+        CGColorRef existingCG = YYTextCGColorFromValue(attrs[(id)kCTForegroundColorAttributeName]);
+        UIColor *existingNS = attrs[NSForegroundColorAttributeName];
+        BOOL sameNS = existingNS && [existingNS isEqual:resolved];
+        BOOL sameCT = existingCG && CGColorEqualToColor(existingCG, resolvedCG);
+        if (!sameNS || !sameCT) {
+            ensureAttrs();
+            newAttrs[NSForegroundColorAttributeName] = resolved;
+            newAttrs[(id)kCTForegroundColorAttributeName] = (__bridge id)(resolvedCG);
+            changed = YES;
+        }
+    }
+
+    UIColor *stroke = YYTextColorFromValue(attrs[NSStrokeColorAttributeName]);
+    if (!stroke) {
+        stroke = YYTextColorFromValue(attrs[(id)kCTStrokeColorAttributeName]);
+    }
+    if (stroke) {
+        UIColor *resolved = YYTextResolveUIColor(stroke, traitCollection);
+        CGColorRef resolvedCG = resolved.CGColor;
+        CGColorRef existingCG = YYTextCGColorFromValue(attrs[(id)kCTStrokeColorAttributeName]);
+        UIColor *existingNS = attrs[NSStrokeColorAttributeName];
+        BOOL sameNS = existingNS && [existingNS isEqual:resolved];
+        BOOL sameCT = existingCG && CGColorEqualToColor(existingCG, resolvedCG);
+        if (!sameNS || !sameCT) {
+            ensureAttrs();
+            newAttrs[NSStrokeColorAttributeName] = resolved;
+            newAttrs[(id)kCTStrokeColorAttributeName] = (__bridge id)(resolvedCG);
+            changed = YES;
+        }
+    }
+
+    UIColor *underlineColor = YYTextColorFromValue(attrs[NSUnderlineColorAttributeName]);
+    if (underlineColor) {
+        UIColor *resolved = YYTextResolveUIColor(underlineColor, traitCollection);
+        if (![underlineColor isEqual:resolved]) {
+            ensureAttrs();
+            newAttrs[NSUnderlineColorAttributeName] = resolved;
+            changed = YES;
+        }
+    }
+
+    UIColor *strikethroughColor = YYTextColorFromValue(attrs[NSStrikethroughColorAttributeName]);
+    if (strikethroughColor) {
+        UIColor *resolved = YYTextResolveUIColor(strikethroughColor, traitCollection);
+        if (![strikethroughColor isEqual:resolved]) {
+            ensureAttrs();
+            newAttrs[NSStrikethroughColorAttributeName] = resolved;
+            changed = YES;
+        }
+    }
+
+    UIColor *backgroundColor = YYTextColorFromValue(attrs[NSBackgroundColorAttributeName]);
+    if (backgroundColor) {
+        UIColor *resolved = YYTextResolveUIColor(backgroundColor, traitCollection);
+        if (![backgroundColor isEqual:resolved]) {
+            ensureAttrs();
+            newAttrs[NSBackgroundColorAttributeName] = resolved;
+            changed = YES;
+        }
+    }
+
+    NSShadow *shadow = attrs[NSShadowAttributeName];
+    if ([shadow isKindOfClass:[NSShadow class]]) {
+        NSShadow *resolvedShadow = YYTextResolveNSShadow(shadow, traitCollection);
+        if (resolvedShadow != shadow) {
+            ensureAttrs();
+            newAttrs[NSShadowAttributeName] = resolvedShadow;
+            changed = YES;
+        }
+    }
+
+    YYTextShadow *yyShadow = attrs[YYTextShadowAttributeName];
+    if ([yyShadow isKindOfClass:[YYTextShadow class]]) {
+        YYTextShadow *resolvedShadow = YYTextResolveTextShadow(yyShadow, traitCollection);
+        if (resolvedShadow != yyShadow) {
+            ensureAttrs();
+            newAttrs[YYTextShadowAttributeName] = resolvedShadow;
+            changed = YES;
+        }
+    }
+
+    YYTextShadow *yyInnerShadow = attrs[YYTextInnerShadowAttributeName];
+    if ([yyInnerShadow isKindOfClass:[YYTextShadow class]]) {
+        YYTextShadow *resolvedShadow = YYTextResolveTextShadow(yyInnerShadow, traitCollection);
+        if (resolvedShadow != yyInnerShadow) {
+            ensureAttrs();
+            newAttrs[YYTextInnerShadowAttributeName] = resolvedShadow;
+            changed = YES;
+        }
+    }
+
+    YYTextDecoration *underlineDecoration = attrs[YYTextUnderlineAttributeName];
+    if ([underlineDecoration isKindOfClass:[YYTextDecoration class]]) {
+        YYTextDecoration *resolvedDecoration = YYTextResolveTextDecoration(underlineDecoration, traitCollection);
+        if (resolvedDecoration != underlineDecoration) {
+            ensureAttrs();
+            newAttrs[YYTextUnderlineAttributeName] = resolvedDecoration;
+            changed = YES;
+        }
+    }
+
+    YYTextDecoration *strikethroughDecoration = attrs[YYTextStrikethroughAttributeName];
+    if ([strikethroughDecoration isKindOfClass:[YYTextDecoration class]]) {
+        YYTextDecoration *resolvedDecoration = YYTextResolveTextDecoration(strikethroughDecoration, traitCollection);
+        if (resolvedDecoration != strikethroughDecoration) {
+            ensureAttrs();
+            newAttrs[YYTextStrikethroughAttributeName] = resolvedDecoration;
+            changed = YES;
+        }
+    }
+
+    YYTextBorder *border = attrs[YYTextBorderAttributeName];
+    if ([border isKindOfClass:[YYTextBorder class]]) {
+        YYTextBorder *resolvedBorder = YYTextResolveTextBorder(border, traitCollection);
+        if (resolvedBorder != border) {
+            ensureAttrs();
+            newAttrs[YYTextBorderAttributeName] = resolvedBorder;
+            changed = YES;
+        }
+    }
+
+    YYTextBorder *backgroundBorder = attrs[YYTextBackgroundBorderAttributeName];
+    if ([backgroundBorder isKindOfClass:[YYTextBorder class]]) {
+        YYTextBorder *resolvedBorder = YYTextResolveTextBorder(backgroundBorder, traitCollection);
+        if (resolvedBorder != backgroundBorder) {
+            ensureAttrs();
+            newAttrs[YYTextBackgroundBorderAttributeName] = resolvedBorder;
+            changed = YES;
+        }
+    }
+
+    if (resolveHighlight) {
+        YYTextHighlight *highlight = attrs[YYTextHighlightAttributeName];
+        if ([highlight isKindOfClass:[YYTextHighlight class]]) {
+            NSDictionary *resolvedAttrs = YYTextResolveAttributesWithTrait(highlight.attributes, traitCollection, NO);
+            if (resolvedAttrs != highlight.attributes) {
+                YYTextHighlight *resolvedHighlight = [YYTextHighlight new];
+                resolvedHighlight.attributes = resolvedAttrs;
+                resolvedHighlight.userInfo = highlight.userInfo;
+                resolvedHighlight.tapAction = highlight.tapAction;
+                resolvedHighlight.longPressAction = highlight.longPressAction;
+                ensureAttrs();
+                newAttrs[YYTextHighlightAttributeName] = resolvedHighlight;
+                changed = YES;
+            }
+        }
+    }
+
+    return changed ? newAttrs : attrs;
+}
+
+static NSAttributedString *YYTextResolveTextForTrait(NSAttributedString *text, UITraitCollection *traitCollection) {
+    if (!text || text.length == 0 || !traitCollection) return text;
+    __block NSMutableAttributedString *mutable = nil;
+    __block BOOL changed = NO;
+    [text enumerateAttributesInRange:NSMakeRange(0, text.length)
+                             options:0
+                          usingBlock:^(NSDictionary<NSAttributedStringKey, id> *attrs, NSRange range, BOOL *stop) {
+        NSDictionary *resolved = YYTextResolveAttributesWithTrait(attrs, traitCollection, YES);
+        if (resolved && resolved != attrs) {
+            if (!mutable) mutable = [text mutableCopy];
+            [mutable setAttributes:resolved range:range];
+            changed = YES;
+        }
+    }];
+    return changed ? mutable : text;
+}
+
 @implementation YYTextLinePositionSimpleModifier
 - (void)modifyLines:(NSArray *)lines fromText:(NSAttributedString *)text inContainer:(YYTextContainer *)container {
     if (container.verticalForm) {
@@ -101,6 +360,7 @@ static CGColorRef YYTextGetCGColor(CGColorRef color) {
     YYTextTruncationType _truncationType;
     NSAttributedString *_truncationToken;
     id<YYTextLinePositionModifier> _linePositionModifier;
+    UITraitCollection *_traitCollection;
 }
 
 + (instancetype)containerWithSize:(CGSize)size {
@@ -142,6 +402,7 @@ static CGColorRef YYTextGetCGColor(CGColorRef color) {
     one->_truncationType = _truncationType;
     one->_truncationToken = _truncationToken.copy;
     one->_linePositionModifier = [(NSObject *)_linePositionModifier copy];
+    one->_traitCollection = _traitCollection.copy;
     dispatch_semaphore_signal(_lock);
     return one;
 }
@@ -161,6 +422,9 @@ static CGColorRef YYTextGetCGColor(CGColorRef color) {
     [aCoder encodeInteger:_maximumNumberOfRows forKey:@"maximumNumberOfRows"];
     [aCoder encodeInteger:_truncationType forKey:@"truncationType"];
     [aCoder encodeObject:_truncationToken forKey:@"truncationToken"];
+    if (_traitCollection) {
+        [aCoder encodeObject:_traitCollection forKey:@"traitCollection"];
+    }
     if ([_linePositionModifier respondsToSelector:@selector(encodeWithCoder:)] &&
         [_linePositionModifier respondsToSelector:@selector(initWithCoder:)]) {
         [aCoder encodeObject:_linePositionModifier forKey:@"linePositionModifier"];
@@ -179,6 +443,7 @@ static CGColorRef YYTextGetCGColor(CGColorRef color) {
     _maximumNumberOfRows = [aDecoder decodeIntegerForKey:@"maximumNumberOfRows"];
     _truncationType = [aDecoder decodeIntegerForKey:@"truncationType"];
     _truncationToken = [aDecoder decodeObjectForKey:@"truncationToken"];
+    _traitCollection = [aDecoder decodeObjectForKey:@"traitCollection"];
     _linePositionModifier = [aDecoder decodeObjectForKey:@"linePositionModifier"];
     return self;
 }
@@ -218,6 +483,14 @@ dispatch_semaphore_signal(_lock);
         if (insets.right < 0) insets.right = 0;
         _insets = insets;
     });
+}
+
+- (UITraitCollection *)traitCollection {
+    Getter(UITraitCollection *traitCollection = _traitCollection) return traitCollection;
+}
+
+- (void)setTraitCollection:(UITraitCollection *)traitCollection {
+    Setter(_traitCollection = traitCollection.copy);
 }
 
 - (UIBezierPath *)path {
@@ -398,6 +671,14 @@ dispatch_semaphore_signal(_lock);
     container = container.copy;
     if (!text || !container) return nil;
     if (range.location + range.length > text.length) return nil;
+    if (@available(iOS 13.0, *)) {
+        if (container.traitCollection) {
+            text = (NSMutableAttributedString *)YYTextResolveTextForTrait(text, container.traitCollection);
+            if (container.truncationToken) {
+                container.truncationToken = YYTextResolveTextForTrait(container.truncationToken, container.traitCollection);
+            }
+        }
+    }
     container->_readonly = YES;
     maximumNumberOfRows = container.maximumNumberOfRows;
     
